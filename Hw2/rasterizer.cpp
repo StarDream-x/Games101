@@ -74,16 +74,19 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
     Eigen::Matrix4f mvp = projection * view * model;
     for (auto& i : ind)
     {
+        // std::cout<< "before z=" << buf[i[0]].z() << std::endl;
         Triangle t;
         Eigen::Vector4f v[] = {
                 mvp * to_vec4(buf[i[0]], 1.0f),
                 mvp * to_vec4(buf[i[1]], 1.0f),
                 mvp * to_vec4(buf[i[2]], 1.0f)
         };
+        
         //Homogeneous division
         for (auto& vec : v) {
             vec /= vec.w();
         }
+        // std::cout<< "after z=" << v[0].z() << std::endl;
         //Viewport transformation
         for (auto & vert : v)
         {
@@ -95,8 +98,8 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
         for (int i = 0; i < 3; ++i)
         {
             t.setVertex(i, v[i].head<3>());
-            t.setVertex(i, v[i].head<3>());
-            t.setVertex(i, v[i].head<3>());
+            // t.setVertex(i, v[i].head<3>());
+            // t.setVertex(i, v[i].head<3>());
         }
 
         auto col_x = col[i[0]];
@@ -143,6 +146,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
                     float w_reciprocal = 1.0/(alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
                     float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
                     z_interpolated *= w_reciprocal;
+                    z_interpolated = 1 - z_interpolated;
 
                     auto ind = (height-1-y)*width + x;
                     ind = ind * 4 + i;

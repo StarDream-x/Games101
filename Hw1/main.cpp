@@ -36,20 +36,14 @@ Eigen::Matrix4f get_model_matrix(float rotation_angle)
 Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
                                       float zNear, float zFar)
 {
-    // Students will implement this function
-
     Eigen::Matrix4f projection = Eigen::Matrix4f::Identity();
-
-    // TODO: Implement this function
-    // Create the projection matrix for the given parameters.
-    // Then return it.
     Eigen::Matrix4f pTo,orth;
     float n = zNear, f = zFar;
-    pTo << n, 0.0f, 0.0f, 0.0f, 0.0f, n, 0.0f, 0.0f, 0.0f, 0.0f, n+f, -(n * f), 0.0f, 0.0f, 1.0f, 0.0f;
+    pTo << -n, 0.0f, 0.0f, 0.0f, 0.0f, -n, 0.0f, 0.0f, 0.0f, 0.0f, -n-f, -(n * f), 0.0f, 0.0f, 1.0f, 0.0f;
     eye_fov = eye_fov / 360 * acos(-1);
     float t = n * std::tan(eye_fov);
     float l = t * aspect_ratio;
-    orth << 1/l, 0.0f, 0.0f, 0.0f, 0.0f, 1/t, 0.0f, 0.0f, 0.0f, 0.0f, 2 / (f - n), -(f + n) / (f - n), 0.0f, 0.0f, 0.0f, 1.0f;
+    orth << 1/l, 0.0f, 0.0f, 0.0f, 0.0f, 1/t, 0.0f, 0.0f, 0.0f, 0.0f, 2 / (f - n), (f + n) / (f - n), 0.0f, 0.0f, 0.0f, 1.0f;
     projection = orth * pTo;
     return projection;
 }
@@ -141,7 +135,7 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         // r.set_model(get_model_matrix(angle));
-        r.set_model(get_rotation(Vector3f(1.0f, 0.0f, 0.0f), angle));
+        r.set_model(get_rotation(Vector3f(1.0f, 1.0f, 1.0f), angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 

@@ -5,6 +5,7 @@
 #include "Triangle.hpp"
 #include <algorithm>
 #include <array>
+#include <iostream>
 
 
 Triangle::Triangle() {
