@@ -14,7 +14,7 @@ This repo is my solutions for games101.
 ## TODO
 - [x] Hw0
 - [x] Hw1
-- [ ] Hw2
+- [x] Hw2
 - [ ] Hw3
 - [ ] Hw4
 - [ ] Hw5
