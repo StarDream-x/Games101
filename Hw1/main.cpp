@@ -55,6 +55,7 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
 }
 
 Eigen::Matrix4f get_rotation(Vector3f axis, float angle){
+    axis = axis / axis.size();
     angle = angle / 180 * acos(-1);
     Eigen::Matrix3f rt1,rt2,rt3;
     rt1 = Eigen::Matrix3f::Identity();
@@ -140,7 +141,7 @@ int main(int argc, const char** argv)
         r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
         // r.set_model(get_model_matrix(angle));
-        r.set_model(get_rotation(Vector3f(1.0f, 1.0f, 1.0f), angle));
+        r.set_model(get_rotation(Vector3f(1.0f, 0.0f, 0.0f), angle));
         r.set_view(get_view_matrix(eye_pos));
         r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
