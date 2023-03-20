@@ -128,6 +128,8 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
         if((*iter).x()>hx) hx = (*iter).x();
         if((*iter).y()>hy) hy = (*iter).y();
     }
+    lx = std::max(lx, 0.0f); hx = std::min(hx, (float)width);
+    ly = std::max(ly, 0.0f); hy = std::min(hy, (float)height);
     
     // iterate through the pixel and find if the current pixel is inside the triangle
     // If so, use the following code to get the interpolated z value.
