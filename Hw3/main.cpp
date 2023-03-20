@@ -206,7 +206,8 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
 
     Vector3f n = normal;
     float x = n.x(), y = n.y(), z = n.z();
-    Vector3f t(x*y/sqrt(x*x+z*z),sqrt(x*x+z*z),z*y/sqrt(x*x+z*z));
+    Vector3f t(x*y/sqrt(x*x+z*z),-sqrt(x*x+z*z),z*y/sqrt(x*x+z*z));
+    t = t.normalized();
     Vector3f b = n.cross(t);
     Matrix3f TBN;
     TBN << t.x(), b.x(), n.x(),
@@ -278,7 +279,8 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
 
     Vector3f n = normal;
     float x = n.x(), y = n.y(), z = n.z();
-    Vector3f t(x*y/sqrt(x*x+z*z),sqrt(x*x+z*z),z*y/sqrt(x*x+z*z));
+    Vector3f t(x*y/sqrt(x*x+z*z),-sqrt(x*x+z*z),z*y/sqrt(x*x+z*z));
+    t = t.normalized();
     Vector3f b = n.cross(t);
     Matrix3f TBN;
     TBN << t.x(), b.x(), n.x(),
