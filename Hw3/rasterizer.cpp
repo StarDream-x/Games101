@@ -151,8 +151,9 @@ auto to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
 
 static bool insideTriangle(int x, int y, const Vector4f* _v){
     Vector3f v[3];
-    for(int i=0;i<3;i++)
+    for(int i=0;i<3;i++){
         v[i] = {_v[i].x(),_v[i].y(), 1.0};
+    }
     Vector3f f0,f1,f2;
     f0 = v[1].cross(v[0]);
     f1 = v[2].cross(v[1]);
@@ -292,7 +293,8 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
         if((*iter).x()>hx) hx = (*iter).x();
         if((*iter).y()>hy) hy = (*iter).y();
     }
-
+    lx = std::max(lx, 0.0f); hx = std::min(hx, (float)width);
+    ly = std::max(ly, 0.0f); hy = std::min(hy, (float)height);
     //interpolated
     for(int x=floor(lx);x<=ceil(hx);++x){
         for(int y=floor(ly);y<=ceil(hy);++y){
@@ -319,10 +321,6 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
             }
         }
     }
-
-
-
- 
 }
 
 void rst::rasterizer::set_model(const Eigen::Matrix4f& m)

@@ -92,7 +92,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
-        return_color = payload.texture->getColor(payload.tex_coords.x(),payload.tex_coords.y());
+        return_color = payload.texture->getColorBilinear(payload.tex_coords.x(),payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -215,11 +215,11 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
            t.z(), b.z(), n.z();
     float u = payload.tex_coords.x(), v = payload.tex_coords.y();
     float w = payload.texture->width, h = payload.texture->height;
-    float dU = kh * kn * (payload.texture->getColor(u+1/w,v).norm() - payload.texture->getColor(u,v).norm());
-    float dV = kh * kn * (payload.texture->getColor(u,v+1/h).norm() - payload.texture->getColor(u,v).norm());
+    float dU = kh * kn * (payload.texture->getColorBilinear(u+1/w,v).norm() - payload.texture->getColorBilinear(u,v).norm());
+    float dV = kh * kn * (payload.texture->getColorBilinear(u,v+1/h).norm() - payload.texture->getColorBilinear(u,v).norm());
     Vector3f ln(-dU, -dV, 1.0f);
 
-    point = point + (kn * normal * payload.texture->getColor(u,v).norm());
+    point = point + (kn * normal * payload.texture->getColorBilinear(u,v).norm());
 
     normal = (TBN * ln).normalized();
 
@@ -288,8 +288,8 @@ Eigen::Vector3f bump_fragment_shader(const fragment_shader_payload& payload)
            t.z(), b.z(), n.z();
     float u = payload.tex_coords.x(), v = payload.tex_coords.y();
     float w = payload.texture->width, h = payload.texture->height;
-    float dU = kh * kn * (payload.texture->getColor(u+1/w,v).norm() - payload.texture->getColor(u,v).norm());
-    float dV = kh * kn * (payload.texture->getColor(u,v+1/h).norm() - payload.texture->getColor(u,v).norm());
+    float dU = kh * kn * (payload.texture->getColorBilinear(u+1/w,v).norm() - payload.texture->getColorBilinear(u,v).norm());
+    float dV = kh * kn * (payload.texture->getColorBilinear(u,v+1/h).norm() - payload.texture->getColorBilinear(u,v).norm());
     Vector3f ln(-dU, -dV, 1.0f);
     normal = (TBN * ln).normalized();
 
@@ -309,9 +309,11 @@ int main(int argc, const char** argv)
     std::string filename = "output.png";
     objl::Loader Loader;
     std::string obj_path = "../models/spot/";
+    // std::string obj_path = "../models/rock/";
 
     // Load .obj File
     bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    // bool loadout = Loader.LoadFile("../models/rock/rock.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
@@ -327,9 +329,11 @@ int main(int argc, const char** argv)
         }
     }
 
-    rst::rasterizer r(700, 700);
+    const int rsw = 700, rsh = 700;
+    rst::rasterizer r(rsw, rsh);
 
     auto texture_path = "hmap.jpg";
+    // auto texture_path = "rock.png";
     r.set_texture(Texture(obj_path + texture_path));
 
     std::function<Eigen::Vector3f(fragment_shader_payload)> active_shader = phong_fragment_shader;
@@ -344,6 +348,7 @@ int main(int argc, const char** argv)
             std::cout << "Rasterizing using the texture shader\n";
             active_shader = texture_fragment_shader;
             texture_path = "spot_texture.png";
+            // texture_path = "rock.png";
             r.set_texture(Texture(obj_path + texture_path));
         }
         else if (argc == 3 && std::string(argv[2]) == "normal")
@@ -384,7 +389,7 @@ int main(int argc, const char** argv)
         r.set_projection(get_projection_matrix(45.0, 1, 0.1, 50));
 
         r.draw(TriangleList);
-        cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
+        cv::Mat image(rsw, rsh, CV_32FC3, r.frame_buffer().data());
         image.convertTo(image, CV_8UC3, 1.0f);
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 
@@ -403,7 +408,7 @@ int main(int argc, const char** argv)
 
         //r.draw(pos_id, ind_id, col_id, rst::Primitive::Triangle);
         r.draw(TriangleList);
-        cv::Mat image(700, 700, CV_32FC3, r.frame_buffer().data());
+        cv::Mat image(rsw, rsh, CV_32FC3, r.frame_buffer().data());
         image.convertTo(image, CV_8UC3, 1.0f);
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 

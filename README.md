@@ -15,7 +15,7 @@ This repo is my solutions for games101.
 - [x] Hw0
 - [x] Hw1
 - [x] Hw2
-- [ ] Hw3
+- [x] Hw3
 - [ ] Hw4
 - [ ] Hw5
 - [ ] Hw6
