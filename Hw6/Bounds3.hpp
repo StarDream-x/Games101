@@ -86,6 +86,11 @@ class Bounds3
 
     inline bool IntersectP(const Ray& ray, const Vector3f& invDir,
                            const std::array<int, 3>& dirisNeg) const;
+
+    float getArea(){
+        Vector3f v = pMax - pMin;
+        return (v.x * v.y + v.x * v.z + v.y * v.z) * 2;
+    }
 };
 
 

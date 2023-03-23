@@ -44,6 +44,9 @@ public:
     const int maxPrimsInNode;
     const SplitMethod splitMethod;
     std::vector<Object*> primitives;
+
+private:
+    bool useSAH = true;
 };
 
 struct BVHBuildNode {

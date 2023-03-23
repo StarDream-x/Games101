@@ -75,10 +75,32 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects)
             break;
         }
 
-        auto beginning = objects.begin();
-        auto middling = objects.begin() + (objects.size() / 2);
-        auto ending = objects.end();
+        int md = (objects.size() / 2);
 
+        if(useSAH){
+            int l = objects.size();
+            std::vector<float> qz; qz.resize(l);
+            std::vector<float> hz; hz.resize(l);
+            Bounds3 qBounds;
+            for(int i = 0; i < l; ++i){
+                qBounds = Union(qBounds, objects[i]->getBounds().Centroid());
+                qz[i] = qBounds.getArea();
+            }
+            Bounds3 hBounds;
+            float lw = -1.0f;
+            for(int i = l-1; i >= 1; --i){
+                hBounds = Union(hBounds, objects[i]->getBounds().Centroid());
+                hz[i] = hBounds.getArea();
+                float nt = qz[i-1] * (i - 1) + hz[i] * (l - i + 1);
+                if(lw < -0.001 || lw > nt){
+                    lw = nt; md = i;
+                }
+            }
+        }
+
+        auto beginning = objects.begin();
+        auto middling = objects.begin() + md;
+        auto ending = objects.end();
         auto leftshapes = std::vector<Object*>(beginning, middling);
         auto rightshapes = std::vector<Object*>(middling, ending);
 
