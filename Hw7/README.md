@@ -1,3 +1,3 @@
+# Hw7
 
-I've finished task ...
-
+This is the project for hw7, Path Tracing.
