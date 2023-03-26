@@ -5,11 +5,15 @@
 #include <fstream>
 #include "Scene.hpp"
 #include "Renderer.hpp"
+#include <mutex>
+#include <thread>
 
 
 inline float deg2rad(const float& deg) { return deg * M_PI / 180.0; }
 
 const float EPSILON = 0.00001;
+
+std::mutex mtx;
 
 // The main render function. This where we iterate over all pixels in the image,
 // generate primary rays and cast these rays into the scene. The content of the
@@ -24,23 +28,39 @@ void Renderer::Render(const Scene& scene)
     int m = 0;
 
     // change the spp value to change sample ammount
-    int spp = 16;
+    int spp = 64;
     std::cout << "SPP: " << spp << "\n";
-    for (uint32_t j = 0; j < scene.height; ++j) {
-        for (uint32_t i = 0; i < scene.width; ++i) {
-            // generate primary ray direction
-            float x = (2 * (i + 0.5) / (float)scene.width - 1) *
-                      imageAspectRatio * scale;
-            float y = (1 - 2 * (j + 0.5) / (float)scene.height) * scale;
 
-            Vector3f dir = normalize(Vector3f(-x, y, 1));
-            for (int k = 0; k < spp; k++){
-                framebuffer[m] += scene.castRay(Ray(eye_pos, dir), 0) / spp;  
+    //multi-thread
+    int process = 0;
+    const int thred = 20;
+    int times = scene.height / thred;
+    std::thread th[thred];
+
+    auto castRayMultiThread = [&](uint32_t y_min, uint32_t y_max){
+        for(uint32_t j = y_min; j < y_max;++j){
+            int m = j * scene.width;
+            for(uint32_t i = 0; i < scene.width; ++i){
+                float x = (2 * (i + 0.5) / (float)scene.width - 1) *
+                          imageAspectRatio * scale;
+                float y = (1 - 2 * (j + 0.5) / (float)scene.height) * scale;
+                Vector3f dir = normalize(Vector3f(-x, y, 1));
+                for (int k = 0; k < spp; k++){
+                    framebuffer[m] += scene.castRay(Ray(eye_pos, dir), 0) / spp;
+                }
+                m++;
             }
-            m++;
+            mtx.lock();
+            process++;
+            UpdateProgress(process / (float)scene.height);
+            mtx.unlock();
         }
-        UpdateProgress(j / (float)scene.height);
-    }
+    };
+
+    for(int i = 0; i < thred; ++i)
+        th[i] = std::thread(castRayMultiThread, i * times, (i + 1) * times);
+    for(int i = 0; i< thred; ++i)
+        th[i].join();
     UpdateProgress(1.f);
 
     // save framebuffer to file
