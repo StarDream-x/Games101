@@ -7,7 +7,7 @@
 
 #include "Vector.hpp"
 
-enum MaterialType { DIFFUSE};
+enum MaterialType { DIFFUSE, MICROFACET};
 
 class Material{
 private:
@@ -85,6 +85,50 @@ private:
         return a.x * B + a.y * C + a.z * N;
     }
 
+    float DistributionGGX(Vector3f N, Vector3f H, float  roughness){
+        float a = roughness * roughness;
+        float a2 = a * a;
+        float NdotH = std::max(dotProduct(N, H), 0.0f);
+        float NdotH2 = NdotH * NdotH;
+
+        float nom = a2;
+        float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
+        denom = std::acos(-1) * denom * denom;
+
+        return  nom / denom;
+    }
+
+    float GenometrySchlickGGX(float NdotV, float roughness){
+        float r = roughness + 1.0f;
+        float k = r * r / 8.0f;
+
+        float nom = NdotV;
+        float denom = NdotV * (1.0f - k) + k;
+
+        return nom / denom;
+    }
+
+    float GeometrySmith(Vector3f N, Vector3f V, Vector3f L, float roughness){
+        float NdotV = std::max(dotProduct(N,V), 0.0f);
+        float NdotL = std::max(dotProduct(N,L), 0.0f);
+        float ggx2 = GenometrySchlickGGX(NdotV, roughness);
+        float ggx1 = GenometrySchlickGGX(NdotL, roughness);
+
+        return ggx1 * ggx2;
+    }
+
+    float GetMicrofacetBRDF(const Vector3f V, const Vector3f L, const Vector3f N, float &F){
+        float ior = 1.85f, roughness = 0.35f;
+        fresnel(L, N, ior, F);
+        Vector3f H = normalize(V + L);
+        float D = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, L, roughness);
+
+        float nominator = D * G * F;
+        float denominator = 4.0f * std::max(dotProduct(N, V), 0.0f) * std::max(dotProduct(N, L), 0.0f) + 0.001f;
+        return nominator / denominator;
+    }
+
 public:
     MaterialType m_type;
     //Vector3f m_color;
@@ -131,6 +175,7 @@ Vector3f Material::getColorAt(double u, double v) {
 
 Vector3f Material::sample(const Vector3f &wi, const Vector3f &N){
     switch(m_type){
+        case MICROFACET:
         case DIFFUSE:
         {
             // uniform sample on the hemisphere
@@ -147,6 +192,7 @@ Vector3f Material::sample(const Vector3f &wi, const Vector3f &N){
 
 float Material::pdf(const Vector3f &wi, const Vector3f &wo, const Vector3f &N){
     switch(m_type){
+        case MICROFACET:
         case DIFFUSE:
         {
             // uniform sample probability 1 / (2 * PI)
@@ -168,6 +214,19 @@ Vector3f Material::eval(const Vector3f &wi, const Vector3f &wo, const Vector3f &
             if (cosalpha > 0.0f) {
                 Vector3f diffuse = Kd / M_PI;
                 return diffuse;
+            }
+            else
+                return Vector3f(0.0f);
+            break;
+        }
+        case MICROFACET:
+        {
+            float cosalpha = dotProduct(N, wo);
+            if (cosalpha > 0.0f) {
+                float F;
+                Vector3f specular = Ks * GetMicrofacetBRDF(-wi, wo, N, F);
+                Vector3f diffuse = (1 - F) * Kd / M_PI;
+                return specular + diffuse;
             }
             else
                 return Vector3f(0.0f);
