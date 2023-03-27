@@ -20,4 +20,4 @@ This repo is my solutions for games101.
 - [x] Hw5-TBN Matrix
 - [x] Hw6-BVH
 - [x] Hw7-Path Tracing & Microfacet
-- [ ] Hw8
+- [x] Hw8-Spring Simulation
