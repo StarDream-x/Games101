@@ -12,12 +12,12 @@ This repo is my solutions for games101.
 6. run the project with `./projectName`, here projectName is the corresponding project's name
 
 ## TODO
-- [x] Hw0
-- [x] Hw1
-- [x] Hw2
-- [x] Hw3
-- [x] Hw4
-- [x] Hw5
-- [x] Hw6
-- [x] Hw7
+- [x] Hw0-Preparation
+- [x] Hw1-MVP
+- [x] Hw2-Raster
+- [x] Hw3-Blinn-Phong & Texure Mapping
+- [x] Hw4-Bezier
+- [x] Hw5-BTN Matrix
+- [x] Hw6-BVH
+- [x] Hw7-Path Tracing & Microfacet
 - [ ] Hw8
